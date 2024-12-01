@@ -1,0 +1,13 @@
+<div class="container">
+    <h2>Sessions</h2>
+  
+    <button (click)="createSession()" class="btn btn-primary">Create New Session</button>
+  
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+  
+    <ul>
+      <li *ngFor="let session of sessions">
+        {{ session.name }} <!-- Adjust based on your API response -->
+      </li>
+    </ul>
+  </div>

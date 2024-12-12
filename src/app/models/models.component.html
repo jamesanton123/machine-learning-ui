@@ -1,0 +1,46 @@
+<div class="container">
+    <h2>Models</h2>
+  
+    <div class="form-container">
+      <h1>Create a New Model</h1>
+      <form (ngSubmit)="onSubmit()">
+        <label for="modelName">Model Name:</label>
+        <input
+          type="text"
+          id="modelName"
+          name="modelName"
+          [(ngModel)]="modelName"
+          placeholder="Enter model name"
+          required
+        />
+        <button type="submit">Create New Model</button>
+      </form>
+    </div>
+  
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+  
+    <!-- <ul>
+      <li *ngFor="let model of models">
+        {{ model }}
+      </li>
+    </ul> -->
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let model of models" (click)="onRowClick(model)" style="cursor: pointer;">
+          <td>{{ model.name }}</td>
+          <td>
+            <button (click)="onButtonClick(model, $event)">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+  </div>

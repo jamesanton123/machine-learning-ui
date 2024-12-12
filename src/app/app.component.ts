@@ -9,7 +9,7 @@ import { RouterModule } from '@angular/router';
     <header>
       <h1>MachLearner</h1>
       <nav>
-        <a routerLink="/sessions" routerLinkActive="active">Sessions</a>
+        <a routerLink="/models" routerLinkActive="active">Models</a>
       </nav>
     </header>
     <main>

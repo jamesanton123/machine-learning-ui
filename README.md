@@ -7,5 +7,5 @@ npm install
 ng serve
 in browser localhost:4200
 ng generate component home
-ng generate component sessions
-ng generate service sessions
+ng generate component models
+ng generate service models

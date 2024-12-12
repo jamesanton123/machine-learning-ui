@@ -39,7 +39,7 @@ import { CommonModule } from '@angular/common';
         </div>
         <br/>
         <div *ngFor="let providerKey of formattedModelProvidersKeys">
-          <h3>{{ providerKey }}</h3>
+          <h3>{{ formattedModelProviders!!.get(providerKey)!!.providerName }}</h3>
           <table class="data-table">
             <thead>
               <tr>
@@ -48,7 +48,7 @@ import { CommonModule } from '@angular/common';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of formattedModelProviders.get(providerKey)">
+              <tr *ngFor="let item of formattedModelProviders.get(providerKey)!!.argData">
                 <td class="left-align">{{ item.paramName }}</td>
                 <td class="left-align">{{ item.argValue }}</td>
               </tr>
@@ -174,7 +174,7 @@ export class ModelDetailsComponent {
   // All of the providers available
   providers: { id: string; name: string; shortDescription: string; longDescription: string; params: any[] }[] = [];
   // providers that have been added to the model
-  formattedModelProviders: Map<string, { paramName: string; dataProviderParamId: string; argValue: string; }[]> = new Map();
+  formattedModelProviders: Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}> = new Map();
   errorMessage: string = '';
   providerRetrievalCompleted: boolean = false;
   testTrainResult: string[] = [];
@@ -195,7 +195,7 @@ export class ModelDetailsComponent {
         // TODO: refactor this to not use nested
         this.modelsService.getProvidersForModel(this.modelId!!).subscribe({
           next: (data) => {
-            var modelProviders: { dataProviderParamId: string; argValue: string; }[] = data;
+            var modelProviders: { modelProviderId: string; dataProviderParamId: string; argValue: string; }[] = data;
             console.log("model providers: " + modelProviders);
             this.formattedModelProviders = this.getFormattedModelProviders(this.providers, modelProviders);
           },
@@ -214,23 +214,26 @@ export class ModelDetailsComponent {
   
   getFormattedModelProviders(
     providers: { id: string; name: string; shortDescription: string; longDescription: string; params: any[]}[], 
-    modelProviders: { dataProviderParamId: string; argValue: string; }[]): 
-    Map<string, { paramName: string; dataProviderParamId: string; argValue: string; }[]> {
+    modelProviders: { modelProviderId: string; dataProviderParamId: string; argValue: string; }[]): 
+    Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}> {
       console.log("formatting model providers");
-      const result = new Map<string, { paramName: string; dataProviderParamId: string; argValue: string; }[]>();
+      const result = new Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}>();
       for (const modelProvider of modelProviders) {
         for (const provider of providers) {
             const matchingParam = provider.params.find(param => param.id === modelProvider.dataProviderParamId);
             
             if (matchingParam) {
-                if (!result.has(provider.name)) {
-                    result.set(provider.name, []);
+                // Create the key if it isn't there yet
+                if (!result.has(modelProvider.modelProviderId)) {
+                    result.set(modelProvider.modelProviderId, {providerName: '', argData: []});
                 }
-                result.get(provider.name)!.push({
-                    dataProviderParamId: modelProvider.dataProviderParamId,
-                    argValue: modelProvider.argValue,
-                    paramName: matchingParam.paramName
-                });
+                var argData = {
+                  dataProviderParamId: modelProvider.dataProviderParamId,
+                  argValue: modelProvider.argValue,
+                  paramName: matchingParam.paramName
+                };
+                result.get(modelProvider.modelProviderId)!.providerName = provider.name;
+                result.get(modelProvider.modelProviderId)!.argData.push(argData);
                 break; // Stop searching once a match is found
             }
         }

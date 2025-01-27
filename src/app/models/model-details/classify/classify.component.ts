@@ -11,15 +11,17 @@ import { CommonModule } from '@angular/common';
   <form (ngSubmit)="submit()">
     <div *ngFor="let field of fields">
       <label>{{ field.providerName }}</label>
+      <p>{{ field.argValues }}</p>
       <input
         *ngIf="field.type === 'numeric'"
         type="text"
-        [(ngModel)]="formData[field.providerId]"
-        name="{{ field.providerId }}"
+        [(ngModel)]="formData[field.modelProviderId]"
+        name="{{ field.modelProviderId }}"
         placeholder="Enter value"
         pattern="^\d+(\.\d+)?$"
         required
       />
+      <br/><br/>
     </div>
 
     <button type="submit">Classify</button>
@@ -61,8 +63,8 @@ export class ClassifyComponent {
   submit() {
     this.result = "";
     const payload = this.fields.map(field => ({
-      providerId: field.providerId,
-      value: this.formData[field.providerId] || null,
+      modelProviderId: field.modelProviderId,
+      value: this.formData[field.modelProviderId] || null,
     }));
     this.modelsService.classify(this.modelId!!, payload).subscribe({
       next: (data) => {

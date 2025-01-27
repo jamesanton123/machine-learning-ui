@@ -3,6 +3,11 @@ import { ModelsService } from '../model.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
+interface DataItem {
+  displayName: string;
+  paramValues: { [key: string]: any };
+}
+
 @Component({
   selector: 'app-model-details',
   imports: [CommonModule],
@@ -23,10 +28,10 @@ import { CommonModule } from '@angular/common';
         </ul>
       </div>
 
-
       <div class="right-side">
         <img src="assets/model.png" alt="Model Image" class="model-image" />
-        <button *ngIf="formattedModelProvidersKeys.length > 0" (click)="retrieveDataForModel()">Retrieve data from providers</button>
+        <br/>
+        <button (click)="retrieveDataForModel()">Retrieve data from providers</button>
         <br/>
         <button (click)="viewProviderData()">View provider data</button>
         <br/>
@@ -38,7 +43,24 @@ import { CommonModule } from '@angular/common';
           {{ item }}
         </div>
         <br/>
-        <div *ngFor="let providerKey of formattedModelProvidersKeys">
+
+
+        <div *ngFor="let item of modelProviderMetadata" style="text-align: left;">
+          <h3>{{ item.displayName }}</h3>
+          <div *ngIf="item.paramValues">
+            <ul>
+              <li *ngFor="let key of objectKeys(item.paramValues)">
+              {{ key }}: {{ item.paramValues[key] }}
+              </li>
+            </ul>
+          </div>
+          <!-- <div *ngIf="item.paramValues | json === '{}'">
+            <em>No parameters available</em>
+          </div>-->
+        </div>
+
+
+        <!--<div *ngFor="let providerKey of formattedModelProvidersKeys">
           <h3>{{ formattedModelProviders!!.get(providerKey)!!.providerName }}</h3>
           <table class="data-table">
             <thead>
@@ -54,7 +76,9 @@ import { CommonModule } from '@angular/common';
               </tr>
             </tbody>
           </table>
-        </div>
+        </div>-->
+
+
 
       </div>
     </div>
@@ -115,6 +139,7 @@ import { CommonModule } from '@angular/common';
   }
   
   .model-image {
+    width:200px;
     max-width: 100%;
     height: auto;
     border-radius: 10px;
@@ -173,6 +198,8 @@ export class ModelDetailsComponent {
   modelId: string | null = null;
   // All of the providers available
   providers: { id: string; name: string; shortDescription: string; longDescription: string; params: any[] }[] = [];
+  
+  modelProviderMetadata: DataItem[] = [];
   // providers that have been added to the model
   formattedModelProviders: Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}> = new Map();
   errorMessage: string = '';
@@ -195,9 +222,8 @@ export class ModelDetailsComponent {
         // TODO: refactor this to not use nested
         this.modelsService.getProvidersForModel(this.modelId!!).subscribe({
           next: (data) => {
-            var modelProviders: { modelProviderId: string; dataProviderParamId: string; argValue: string; }[] = data;
-            console.log("model providers: " + modelProviders);
-            this.formattedModelProviders = this.getFormattedModelProviders(this.providers, modelProviders);
+            this.modelProviderMetadata = data;
+            console.log(data);
           },
           error: (err) => {
             this.errorMessage = 'Failed to load the model\'s providers.';
@@ -210,40 +236,6 @@ export class ModelDetailsComponent {
         console.error(err);
       },
     });
-  }
-  
-  getFormattedModelProviders(
-    providers: { id: string; name: string; shortDescription: string; longDescription: string; params: any[]}[], 
-    modelProviders: { modelProviderId: string; dataProviderParamId: string; argValue: string; }[]): 
-    Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}> {
-      console.log("formatting model providers");
-      const result = new Map<string, {providerName: string; argData: { paramName: string; dataProviderParamId: string; argValue: string; }[]}>();
-      for (const modelProvider of modelProviders) {
-        for (const provider of providers) {
-            const matchingParam = provider.params.find(param => param.id === modelProvider.dataProviderParamId);
-            
-            if (matchingParam) {
-                // Create the key if it isn't there yet
-                if (!result.has(modelProvider.modelProviderId)) {
-                    result.set(modelProvider.modelProviderId, {providerName: '', argData: []});
-                }
-                var argData = {
-                  dataProviderParamId: modelProvider.dataProviderParamId,
-                  argValue: modelProvider.argValue,
-                  paramName: matchingParam.paramName
-                };
-                result.get(modelProvider.modelProviderId)!.providerName = provider.name;
-                result.get(modelProvider.modelProviderId)!.argData.push(argData);
-                break; // Stop searching once a match is found
-            }
-        }
-    }
-      
-    result.forEach((value, key) => {
-      console.log(`Key: ${key}, Value:`, value);
-    });
-
-    return result;
   }
 
   addItemToModel(id: string) {
@@ -293,5 +285,8 @@ export class ModelDetailsComponent {
     this.router.navigate(['/models/' + this.modelId + '/classify']);
   }
 
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj);
+  }
 
 }

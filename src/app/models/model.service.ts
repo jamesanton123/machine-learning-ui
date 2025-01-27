@@ -69,7 +69,7 @@ export class ModelsService {
     return this.http.post<any>(url, {});
   }
 
-  classify(modelId: string, params: { providerId: string; value: string }[]) {
+  classify(modelId: string, params: { modelProviderId: string; value: string }[]) {
     var url = this.feederBaseUrl + '/model/' + modelId + '/classify';
     return this.http.post<any>(url, params);
   }

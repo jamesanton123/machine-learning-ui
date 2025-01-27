@@ -117,6 +117,9 @@ export class ProviderDetailsComponent {
           this.provider.params.forEach((param: any) => {
             if(param.paramType !== 'provided') {
               this.formData[param.id] = '';
+              if(param.fullyQualifiedType === 'java.util.Date') {
+                  this.setDefaultDate(param.id);
+              }
             }
           });
         }
@@ -162,5 +165,15 @@ export class ProviderDetailsComponent {
     this.goBack();
   }
 
+  setDefaultDate(id: string): void {
+    console.log('setting default date');
+    if (!this.formData[id]) {
+      const today = new Date();
+      const year = today.getFullYear() - 1;
+      const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const day = String(today.getDate()).padStart(2, '0');
+      this.formData[id] = `${year}-${month}-${day}`; // Format 'YYYY-MM-DD'
+    }
+  }
   
 }
